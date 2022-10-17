@@ -9,6 +9,9 @@ from models import UserModel
 class UserManager:
     @staticmethod
     def register(user_data):
+        if UserModel.query.filter_by(email=user_data['email']).first():
+            raise BadRequest('User already exist')
+
         user_data['password'] = generate_password_hash(user_data['password'], method='sha256')
         user = UserModel(**user_data)
         try:
@@ -21,7 +24,7 @@ class UserManager:
     @staticmethod
     def login(data):
         try:
-            user = UserModel.flter(email=data['email']).first()
+            user = UserModel.query.filter_by(email=data['email']).first()
             if user and check_password_hash(user.password, data['password']):
                 return AuthManager.encode_token(user)
         except Exception:
